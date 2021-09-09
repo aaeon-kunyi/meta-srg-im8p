@@ -1,0 +1,43 @@
+[Header]
+	Target = HAB
+	Version = 4.3
+	Hash Algorithm = sha256
+	Engine = CAAM
+	Engine Configuration = 0
+	Certificate Format = X509
+	Signature Format = CMS
+
+[Install SRK]
+	# Index of the key location in the SRK table to be installed
+	File = "%CST_DIR%/crts/SRK_1_2_3_4_table.bin"
+	Source index = 0
+
+[Install CSFK]
+	# Key used to authenticate the CSF data
+	File = "%CST_DIR%/crts/CSF1_1_sha256_4096_65537_v3_usr_crt.pem"
+
+[Authenticate CSF]
+
+
+[Unlock]
+	Engine = CAAM
+	Features = MID, RNG
+	# for MID, Leave Job Ring and DECO master ID registers Unlocked
+	# for MFG, Keep manufacturing protection private key in CAAM internal memory.
+	# for RNG, Leaves RNG state handle 0 uninstantiated,
+	#	   does not generate descriptor keys, does not set the AES DPA mask,
+	#          and does not block state handle 0 test instantiation.
+
+[Install Key]
+    # Key slot index used to authenticate the key to be installed
+    Verification index = 0
+    # Target key slot in HAB key store where key will be installed
+    Target index = 2
+    # Key to install
+    File = "%CST_DIR%/crts/IMG1_1_sha256_4096_65537_v3_usr_crt.pem"
+
+[Authenticate Data]
+    # Key slot index used to authenticate the image data
+    Verification index = 2
+    # Authenticate Start Address, Offset, Length and file
+    Blocks = %SPL_HAB_BLOCK% "%FLASH_BIN%"

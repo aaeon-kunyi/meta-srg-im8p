@@ -1,0 +1,9 @@
+[Unit]
+Description=start device initializing script
+
+[Service]
+Type=simple
+ExecStart=/bin/sh -c '/usr/sbin/device-init.sh'
+
+[Install]
+WantedBy=multi-user.target

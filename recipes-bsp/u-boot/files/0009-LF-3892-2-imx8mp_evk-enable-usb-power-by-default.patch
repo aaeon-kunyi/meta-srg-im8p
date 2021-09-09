@@ -1,0 +1,31 @@
+From d37325455f634276b0158e739e770ed9eeaea2f1 Mon Sep 17 00:00:00 2001
+From: Peng Fan <peng.fan@nxp.com>
+Date: Tue, 13 Jul 2021 11:31:55 +0800
+Subject: [PATCH 09/19] LF-3892-2 imx8mp_evk: enable usb power by default
+
+Because OS distro not have GPC driver, so we enable usb power by default
+
+Reviewed-by: Ye Li <ye.li@nxp.com>
+Signed-off-by: Peng Fan <peng.fan@nxp.com>
+---
+ board/freescale/imx8mp_evk/imx8mp_evk.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/board/freescale/imx8mp_evk/imx8mp_evk.c b/board/freescale/imx8mp_evk/imx8mp_evk.c
+index 7c08face5f..f2826d3981 100644
+--- a/board/freescale/imx8mp_evk/imx8mp_evk.c
++++ b/board/freescale/imx8mp_evk/imx8mp_evk.c
+@@ -439,6 +439,10 @@ int board_init(void)
+ 
+ #ifdef CONFIG_USB_TCPC
+ 	setup_typec();
++
++	/* Enable USB power default */
++	imx8m_usb_power(0, true);
++	imx8m_usb_power(1, true);
+ #endif
+ 
+ 	if (CONFIG_IS_ENABLED(FEC_MXC)) {
+-- 
+2.33.0
+

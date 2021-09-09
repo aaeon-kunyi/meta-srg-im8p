@@ -1,0 +1,29 @@
+From 33062b2b33ac5f7ec2c8630893ba2c25b7f8ebfc Mon Sep 17 00:00:00 2001
+From: Ye Li <ye.li@nxp.com>
+Date: Mon, 19 Jul 2021 19:46:45 -0700
+Subject: [PATCH 15/19] LFU-198 imx8mq_evk: Increase malloc size to 32MB
+
+Increase malloc pool size to avoid DFU buffer allocation failure.
+
+Signed-off-by: Ye Li <ye.li@nxp.com>
+Reviewed-by: Peng Fan <peng.fan@nxp.com>
+---
+ include/configs/imx8mq_evk.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/configs/imx8mq_evk.h b/include/configs/imx8mq_evk.h
+index 4d82a693b6..7839012111 100644
+--- a/include/configs/imx8mq_evk.h
++++ b/include/configs/imx8mq_evk.h
+@@ -175,7 +175,7 @@
+ #define CONFIG_MMCROOT			"/dev/mmcblk1p2"  /* USDHC2 */
+ 
+ /* Size of malloc() pool */
+-#define CONFIG_SYS_MALLOC_LEN		((CONFIG_ENV_SIZE + (2 * 1024)) * 1024)
++#define CONFIG_SYS_MALLOC_LEN		SZ_32M
+ 
+ #define CONFIG_SYS_SDRAM_BASE           0x40000000
+ #define PHYS_SDRAM                      0x40000000
+-- 
+2.33.0
+

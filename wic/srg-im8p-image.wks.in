@@ -1,0 +1,24 @@
+#
+# The disk layout used is:
+#  - ---------- -------------- --------------- ----------------- ---------------------
+# | | imx-boot |      ESP     |     rootA     |      rootB      |        data        |
+#  - ---------- -------------- --------------- ----------------- ---------------------
+# ^ ^          ^              ^               ^                 ^
+# | |          |              |               |                 |
+# 0 |        8MiB        8MiB + 128MiB   8MiB + 128MiB    8MiB + 128MiB
+#                                         + 4480MiB        + 4480MiB + 4480MiB
+#   ${IMX_BOOT_SEEK} 32 or 33kiB, see reference manual
+#
+
+part u-boot --source rawcopy --sourceparams="file=imx-boot" --ondisk mmcblk --no-table --align ${IMX_BOOT_SEEK}
+
+# ESP
+# part /boot --source bootimg-partition --ondisk mmcblk --fstype=vfat --label boot --active --align 8192 --fixed-size 128M --part-type c12a7328-f81f-11d2-ba4b-00a0c93ec93b --part-name "'EFI System Partition'"
+
+part / --source rootfs            --ondisk mmcblk --fstype=ext4 --label rootA --align 8192 --fixed-size=4480 --active
+part   --source rootfs            --ondisk mmcblk --fstype=ext4 --label rootB --align 8192 --fixed-size=4480
+# part / --source rootfs            --ondisk mmcblk --fstype=squashfs --align 8192 --fixed-size=2432 --active
+# part   --source rootfs            --ondisk mmcblk --fstype=squashfs --align 8192 --fixed-size=2432
+part /data                        --ondisk mmcblk --fstype=ext4 --label data  --align 4096 --fixed-size=1024
+
+bootloader  --ptable gpt

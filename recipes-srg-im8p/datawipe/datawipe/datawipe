@@ -1,0 +1,21 @@
+
+#!/bin/sh
+
+# Enable strict shell mode
+set -euo pipefail
+
+FW_DATAWIPE="/usr/bin/fw_setenv datawipe datawipe"
+
+function NotRoot() {
+    ! ((${EUID:-0} || "$(id -u)"))
+}
+
+if [ ! NotRoot ]; then
+	echo "need root permission"
+	exit 1
+fi
+
+echo "will reboot system for datawipe"
+sleep 3
+$FW_DATAWIPE
+reboot

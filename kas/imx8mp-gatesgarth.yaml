@@ -1,0 +1,106 @@
+#  Sparktech/UWINGS for srg-im8p
+#
+# Authors:
+#   KunYi <kunyi.chen@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+#
+header:
+  version: 10
+
+repos:
+  meta-srg-im8p:
+
+  sources/poky:
+    url: "https://git.yoctoproject.org/git/poky"
+    refspec: 6a751048e50c00261d99c2d8d69534f7a8da38a9
+    layers:
+        meta:
+        meta-poky:
+    patches:
+      01-uncompressed-linux-kernel:
+        path: patches/0001-remove-compress-linux-kernel.patch
+        repo: meta-srg-im8p
+      02-zstd-support-ext4:
+        path: patches/0002-add-support-zstd-on-ext4-and-squash.patch
+        repo: meta-srg-im8p
+      03-hosttools-df:
+        path: patches/0003-add-df-into-HOSTTOOLS.patch
+        repo: meta-srg-im8p
+
+  sources/meta-openembedded:
+    url: "https://github.com/openembedded/meta-openembedded.git"
+    refspec: f3f7a5f1a4713f145107bb043e0d14cb3a51c62f
+    layers:
+        meta-oe:
+        meta-multimedia:
+        meta-networking:
+        meta-python:
+        meta-filesystems:
+        meta-gnome:
+
+  sources/meta-security:
+    url: "https://git.yoctoproject.org/git/meta-security"
+    refspec: 3daf99fd138b0eebe864bbe1b9c71241d97c4512
+    layers:
+        meta-tpm:
+
+  sources/meta-swupdate:
+    url: "https://github.com/sbabic/meta-swupdate.git"
+    refspec: 744d6b96fc0290a7df9045e60c734c4924abfd4a
+
+  sources/meta-clang:
+    url: "https://github.com/kraj/meta-clang.git"
+    # the refspec for latest gatesgarth
+    refspec: 04a1194c78563524659f27941304e564956792b1
+
+  sources/meta-browser:
+    url: "https://github.com/OSSystems/meta-browser.git"
+    refspec: a5a5f277740a8434377f9844c62574efb17a4fa0
+    layers:
+        meta-chromium:
+        meta-firefox:
+
+  sources/meta-freescale:
+    url: "https://github.com/Freescale/meta-freescale.git"
+    refspec: 1acf098972f9f86b26eee815827667dbd2fcdeaf
+    patches:
+      01-to-remove-imx8mp-evk-conf:
+        path: patches/0001-remove-imx8mn-imx8mp-evk-conf.patch
+        repo: meta-srg-im8p
+
+  sources/meta-freescale-3rdparty:
+    url: "https://github.com/Freescale/meta-freescale-3rdparty.git"
+    refspec: 896b28cad2efe77368b007151f726d3faaf8512b
+
+  sources/meta-freescale-distro:
+    url: "https://github.com/Freescale/meta-freescale-distro.git"
+    refspec: 50eb2b32e7702bc435049bfe0a98fc65c864c106
+
+  sources/meta-imx:
+    url: "https://source.codeaurora.org/external/imx/meta-imx.git"
+    refspec: 478d788fc1ecb4783a2702752a61f1035fe9ab9f
+    layers:
+      meta-bsp:
+      meta-ml:
+      meta-sdk:
+
+  sources/meta-python2:
+    url: "https://git.openembedded.org/meta-python2"
+    refspec: d9662a41f67c3425a356bce4ec29f82058127344
+
+  sources/meta-rust:
+    url: "https://github.com/meta-rust/meta-rust.git"
+    refspec: 1b59fd45906082c978d0a0a6e4e51a0ea4aa32c7
+
+  # QT5.15.x for gatesgarth
+  sources/meta-qt5:
+    url: "https://code.qt.io/yocto/meta-qt5.git"
+    # lts 5.15.2 is latest GPL support
+    # late version need commercial license support
+    # so fix the commit id for lts-5.15.2
+    refspec: 41c0d8d277c76b0fda423f2aaa794d3f3889ce99
+
+  sources/meta-nxp-demo-experience:
+    url: https://source.codeaurora.org/external/imxsupport/meta-nxp-demo-experience
+    refspec: 46107357abd2d2da9ffd702c87fce3984a422435

@@ -1,0 +1,33 @@
+#  Sparktech/UWINGS for srg-im8p
+#
+# Authors:
+#   KunYi <kunyi.chen@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+#
+header:
+  version: 10
+  includes:
+    - kas/imx8mp-common.yaml
+
+repos:
+  meta-srg-im8p:
+
+distro: srg-iotgateway
+target: srg-im8p-image
+
+local_conf_header:
+  machine: |
+    MACHINE = "srg-im8p"
+
+  distro: |
+    DISTRO = "srg-iotgateway"
+
+  model: |
+    MODEL_NAME = "srg-im8p"
+    HW_REV = "1.0"
+
+  swupdate: |
+    RFS_VERSION = "1.0.0"
+    SWU_PRIVATE_KEY = "${TOPDIR}/../swu-keys/priv.pem"
+    SWU_PRIVATE_KEY_PASSWORD = "${TOPDIR}/../swu-keys/passout"

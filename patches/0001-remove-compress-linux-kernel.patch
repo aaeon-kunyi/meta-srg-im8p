@@ -1,0 +1,27 @@
+From 7683bd437da37f3bbc2c2bd023236243136f20c3 Mon Sep 17 00:00:00 2001
+From: KunYi <kunyi.chen@gmail.com>
+Date: Thu, 22 Apr 2021 18:03:03 +0800
+Subject: [PATCH] remove compress linux kernel
+
+---
+ meta/classes/kernel-uboot.bbclass | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/meta/classes/kernel-uboot.bbclass b/meta/classes/kernel-uboot.bbclass
+index 87f02654fa..e0628900b9 100644
+--- a/meta/classes/kernel-uboot.bbclass
++++ b/meta/classes/kernel-uboot.bbclass
+@@ -11,8 +11,8 @@ uboot_prep_kimage() {
+ 		linux_comp="none"
+ 	else
+ 		vmlinux_path="vmlinux"
+-		linux_suffix=".gz"
+-		linux_comp="gzip"
++		linux_suffix=""
++		linux_comp="none"
+ 	fi
+ 
+ 	[ -n "${vmlinux_path}" ] && ${OBJCOPY} -O binary -R .note -R .comment -S "${vmlinux_path}" linux.bin
+-- 
+2.31.1
+

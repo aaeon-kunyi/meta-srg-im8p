@@ -1,0 +1,30 @@
+From cdb75cf4716e3c67078054c2b0a8e89f6cf0e0de Mon Sep 17 00:00:00 2001
+From: Peng Fan <peng.fan@nxp.com>
+Date: Mon, 9 Aug 2021 19:08:54 +0800
+Subject: [PATCH 18/19] LF-4277 arm: dts: imx8mn: correct spba bus name
+
+The name conflicts with AIPS bus name, follow upstream kernel,
+update it.
+
+Reviewed-by: Ye Li <ye.li@nxp.com>
+Signed-off-by: Peng Fan <peng.fan@nxp.com>
+---
+ arch/arm/dts/imx8mn.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/dts/imx8mn.dtsi b/arch/arm/dts/imx8mn.dtsi
+index a7a710c953..df4755709b 100644
+--- a/arch/arm/dts/imx8mn.dtsi
++++ b/arch/arm/dts/imx8mn.dtsi
+@@ -325,7 +325,7 @@
+ 			#size-cells = <1>;
+ 			ranges;
+ 
+-			spba: bus@30000000 {
++			spba: spba-bus@30000000 {
+ 				compatible = "fsl,spba-bus", "simple-bus";
+ 				#address-cells = <1>;
+ 				#size-cells = <1>;
+-- 
+2.33.0
+

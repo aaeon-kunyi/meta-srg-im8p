@@ -1,0 +1,30 @@
+#  2021 Sparktech/UWINGS
+#  SD installer for srg-im8p
+#
+# Authors:
+#   KunYi <kunyi.chen@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+#
+header:
+  version: 10
+  includes:
+    - kas/imx8mp-common.yaml
+
+repos:
+  meta-srg-im8p:
+
+distro: poky
+target: sd-installer
+
+local_conf_header:
+  distro: |
+    DISTRO = "poky"
+  initramfs: |
+    INITRAMFS_IMAGE = "mx8mp-install-initramfs"
+    INITRAMFS_IMAGE_NAME = "mx8mp-install-initramfs-${MACHINE}"
+    INITRAMFS_MAXSIZE = "315400"
+    IMAGE_FSTYPES_pn-${INITRAMFS_IMAGE} = "${INITRAMFS_FSTYPES}"
+  install_images: |
+    INSTALLED_IMAGE = "srg-im8p-image"
+    IMAGE_SUFFIX = "wic.gz"

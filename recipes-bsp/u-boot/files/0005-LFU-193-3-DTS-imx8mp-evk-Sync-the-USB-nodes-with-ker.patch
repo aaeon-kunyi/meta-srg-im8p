@@ -1,0 +1,385 @@
+From 3cc57484bb939ee56a0637662ea8e66ce9872b57 Mon Sep 17 00:00:00 2001
+From: Ye Li <ye.li@nxp.com>
+Date: Wed, 14 Jul 2021 00:17:48 -0700
+Subject: [PATCH 05/19] LFU-193-3 DTS: imx8mp-evk: Sync the USB nodes with
+ kernel
+
+Sync the USB nodes with latest 5.10 kernel
+In -u-boot.dtsi, also add some changes for u-boot and distro kernel
+1. Remove the USB power-domain property for distro kernel, since
+   the GPC driver is not supported.
+2. Add dma-ranges property because the Fedora distro kernel does not
+   enable CMA, will fail to allocate dma memory.
+3. Add the compatible string "fsl,imx8mq-dwc3" to match with
+   u-boot XHCI driver
+
+Signed-off-by: Ye Li <ye.li@nxp.com>
+Reviewed-by: Peng Fan <peng.fan@nxp.com>
+---
+ arch/arm/dts/imx8mp-evk-u-boot.dtsi |  18 ++++
+ arch/arm/dts/imx8mp-evk.dts         | 128 ++++++++++++++++++----------
+ arch/arm/dts/imx8mp.dtsi            | 121 ++++++++++++++++++--------
+ 3 files changed, 184 insertions(+), 83 deletions(-)
+
+diff --git a/arch/arm/dts/imx8mp-evk-u-boot.dtsi b/arch/arm/dts/imx8mp-evk-u-boot.dtsi
+index 20ae101cad..b70164f0a6 100644
+--- a/arch/arm/dts/imx8mp-evk-u-boot.dtsi
++++ b/arch/arm/dts/imx8mp-evk-u-boot.dtsi
+@@ -217,3 +217,21 @@
+ 	/delete-property/ assigned-clock-parents;
+ 	/delete-property/ assigned-clock-rates;
+ };
++
++&usb3_0 {
++	dma-ranges = <0x40000000 0x40000000 0xc0000000>;
++	/delete-property/ power-domains;
++};
++
++&usb3_1 {
++	dma-ranges = <0x40000000 0x40000000 0xc0000000>;
++	/delete-property/ power-domains;
++};
++
++&usb_dwc3_0 {
++	compatible = "fsl,imx8mq-dwc3", "snps,dwc3";
++};
++
++&usb_dwc3_1 {
++	compatible = "fsl,imx8mq-dwc3", "snps,dwc3";
++};
+diff --git a/arch/arm/dts/imx8mp-evk.dts b/arch/arm/dts/imx8mp-evk.dts
+index f0159d499e..deb17f5996 100644
+--- a/arch/arm/dts/imx8mp-evk.dts
++++ b/arch/arm/dts/imx8mp-evk.dts
+@@ -57,18 +57,6 @@
+ 		enable-active-high;
+ 	};
+ 
+-	reg_usb1_host_vbus: regulator-usb1-vbus {
+-		compatible = "regulator-fixed";
+-		regulator-name = "usb1_host_vbus";
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_usb1_vbus>;
+-		regulator-min-microvolt = <5000000>;
+-		regulator-max-microvolt = <5000000>;
+-		gpio = <&gpio1 14 GPIO_ACTIVE_HIGH>;
+-		enable-active-high;
+-		regulator-always-on;
+-	};
+-
+ 	reg_usdhc2_vmmc: regulator-usdhc2 {
+ 		compatible = "regulator-fixed";
+ 		pinctrl-names = "default";
+@@ -107,6 +95,20 @@
+ 			};
+ 		};
+ 	};
++
++	cbtl04gp {
++		compatible = "nxp,cbtl04gp";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_typec_mux>;
++		switch-gpios = <&gpio4 20 GPIO_ACTIVE_LOW>;
++		orientation-switch;
++
++		port {
++			usb3_data_ss: endpoint {
++				remote-endpoint = <&typec_con_ss>;
++			};
++		};
++	};
+ };
+ 
+ &eqos {
+@@ -136,26 +138,6 @@
+ 	status = "okay";
+ };
+ 
+-&eqos {
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_eqos>;
+-	phy-mode = "rgmii-id";
+-	phy-handle = <&ethphy0>;
+-	status = "okay";
+-
+-	mdio {
+-		compatible = "snps,dwmac-mdio";
+-		#address-cells = <1>;
+-		#size-cells = <0>;
+-
+-		ethphy0: ethernet-phy@1 {
+-			compatible = "ethernet-phy-ieee802.3-c22";
+-			reg = <1>;
+-			eee-broken-1000t;
+-		};
+-	};
+-};
+-
+ &flexcan2 {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_flexcan2>;
+@@ -338,6 +320,46 @@
+ 			};
+ 		};
+ 	};
++
++	ptn5110: tcpc@50 {
++		compatible = "nxp,ptn5110";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_typec>;
++		reg = <0x50>;
++		interrupt-parent = <&gpio4>;
++		interrupts = <19 8>;
++
++		port {
++			typec_dr_sw: endpoint {
++				remote-endpoint = <&usb3_drd_sw>;
++			};
++		};
++
++		usb_con: connector {
++			compatible = "usb-c-connector";
++			label = "USB-C";
++			power-role = "dual";
++			data-role = "dual";
++			try-power-role = "sink";
++			source-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)>;
++			sink-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)
++				     PDO_VAR(5000, 20000, 3000)>;
++			op-sink-microwatt = <15000000>;
++			self-powered;
++
++			ports {
++				#address-cells = <1>;
++				#size-cells = <0>;
++
++				port@1 {
++					reg = <1>;
++					typec_con_ss: endpoint {
++						remote-endpoint = <&usb3_data_ss>;
++					};
++				};
++			};
++		};
++	};
+ };
+ 
+ &i2c3 {
+@@ -377,20 +399,6 @@
+ 	};
+ };
+ 
+-&i2c3 {
+-	clock-frequency = <400000>;
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_i2c3>;
+-	status = "okay";
+-
+-	pca6416: gpio@20 {
+-		compatible = "ti,tca6416";
+-		reg = <0x20>;
+-		gpio-controller;
+-		#gpio-cells = <2>;
+-	};
+-};
+-
+ &snvs_pwrkey {
+ 	status = "okay";
+ };
+@@ -403,6 +411,17 @@
+ };
+ 
+ &usb3_phy0 {
++	vbus-power-supply = <&ptn5110>;
++	fsl,phy-tx-vref-tune = <0xe>;
++	fsl,phy-tx-preemp-amp-tune = <3>;
++	fsl,phy-tx-vboost-level = <5>;
++	fsl,phy-comp-dis-tune = <7>;
++	fsl,pcs-tx-deemph-3p5db = <0x21>;
++	fsl,phy-pcs-tx-swing-full = <0x7f>;
++	status = "okay";
++};
++
++&usb3_0 {
+ 	status = "okay";
+ };
+ 
+@@ -412,14 +431,29 @@
+ 	srp-disable;
+ 	adp-disable;
+ 	usb-role-switch;
++	role-switch-default-mode = "none";
+ 	status = "okay";
++
++	port {
++		usb3_drd_sw: endpoint {
++			remote-endpoint = <&typec_dr_sw>;
++		};
++	};
+ };
+ 
+ &usb3_phy1 {
++	fsl,phy-tx-preemp-amp-tune = <3>;
++	fsl,phy-tx-vref-tune = <0xb>;
++	status = "okay";
++};
++
++&usb3_1 {
+ 	status = "okay";
+ };
+ 
+ &usb_dwc3_1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_usb1_vbus>;
+ 	dr_mode = "host";
+ 	status = "okay";
+ };
+@@ -619,7 +653,7 @@
+ 
+ 	pinctrl_usb1_vbus: usb1grp {
+ 		fsl,pins = <
+-			MX8MP_IOMUXC_GPIO1_IO14__GPIO1_IO14	0x19
++			MX8MP_IOMUXC_GPIO1_IO14__USB2_OTG_PWR	0x19
+ 		>;
+ 	};
+ 
+diff --git a/arch/arm/dts/imx8mp.dtsi b/arch/arm/dts/imx8mp.dtsi
+index 015f40db86..9410d4e717 100644
+--- a/arch/arm/dts/imx8mp.dtsi
++++ b/arch/arm/dts/imx8mp.dtsi
+@@ -1132,6 +1132,91 @@
+ 
+ 		};
+ 
++		usb3_phy0: usb-phy@381f0040 {
++			compatible = "fsl,imx8mp-usb-phy";
++			reg = <0x381f0040 0x40>;
++			clocks = <&clk IMX8MP_CLK_USB_PHY_ROOT>;
++			clock-names = "phy";
++			assigned-clocks = <&clk IMX8MP_CLK_USB_PHY_REF>;
++			assigned-clock-parents = <&clk IMX8MP_CLK_24M>;
++			#phy-cells = <0>;
++			status = "disabled";
++		};
++
++		usb3_0: usb@32f10100 {
++			compatible = "fsl,imx8mp-dwc3";
++			reg = <0x32f10100 0x8>;
++			clocks = <&clk IMX8MP_CLK_HSIO_ROOT>,
++				 <&clk IMX8MP_CLK_USB_ROOT>;
++			clock-names = "hsio", "suspend";
++			interrupts = <GIC_SPI 148 IRQ_TYPE_LEVEL_HIGH>;
++			power-domains = <&hsiomix_pd>;
++			#address-cells = <1>;
++			#size-cells = <1>;
++			ranges;
++			status = "disabled";
++
++			usb_dwc3_0: dwc3@38100000 {
++				compatible = "snps,dwc3";
++				reg = <0x38100000 0x10000>;
++				clocks = <&clk IMX8MP_CLK_HSIO_AXI>,
++					 <&clk IMX8MP_CLK_USB_CORE_REF>,
++					 <&clk IMX8MP_CLK_USB_ROOT>;
++				clock-names = "bus_early", "ref", "suspend";
++				assigned-clocks = <&clk IMX8MP_CLK_HSIO_AXI>;
++				assigned-clock-parents = <&clk IMX8MP_SYS_PLL2_500M>;
++				assigned-clock-rates = <500000000>;
++				interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>;
++				phys = <&usb3_phy0>, <&usb3_phy0>;
++				phy-names = "usb2-phy", "usb3-phy";
++				snps,dis-u2-freeclk-exists-quirk;
++				status = "disabled";
++			};
++
++		};
++
++		usb3_phy1: usb-phy@382f0040 {
++			compatible = "fsl,imx8mp-usb-phy";
++			reg = <0x382f0040 0x40>;
++			clocks = <&clk IMX8MP_CLK_USB_PHY_ROOT>;
++			clock-names = "phy";
++			assigned-clocks = <&clk IMX8MP_CLK_USB_PHY_REF>;
++			assigned-clock-parents = <&clk IMX8MP_CLK_24M>;
++			#phy-cells = <0>;
++			status = "disabled";
++		};
++
++		usb3_1: usb@32f10108 {
++			compatible = "fsl,imx8mp-dwc3";
++			reg = <0x32f10108 0x8>;
++			clocks = <&clk IMX8MP_CLK_HSIO_ROOT>,
++				 <&clk IMX8MP_CLK_USB_ROOT>;
++			clock-names = "hsio", "suspend";
++			interrupts = <GIC_SPI 149 IRQ_TYPE_LEVEL_HIGH>;
++			power-domains = <&hsiomix_pd>;
++			#address-cells = <1>;
++			#size-cells = <1>;
++			ranges;
++			status = "disabled";
++
++			usb_dwc3_1: dwc3@38200000 {
++				compatible = "snps,dwc3";
++				reg = <0x38200000 0x10000>;
++				clocks = <&clk IMX8MP_CLK_HSIO_AXI>,
++					 <&clk IMX8MP_CLK_USB_CORE_REF>,
++					 <&clk IMX8MP_CLK_USB_ROOT>;
++				clock-names = "bus_early", "ref", "suspend";
++				assigned-clocks = <&clk IMX8MP_CLK_HSIO_AXI>;
++				assigned-clock-parents = <&clk IMX8MP_SYS_PLL2_500M>;
++				assigned-clock-rates = <500000000>;
++				interrupts = <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>;
++				phys = <&usb3_phy1>, <&usb3_phy1>;
++				phy-names = "usb2-phy", "usb3-phy";
++				snps,dis-u2-freeclk-exists-quirk;
++				status = "disabled";
++			};
++		};
++
+ 		ddr-pmu@3d800000 {
+ 			compatible = "fsl,imx8mp-ddr-pmu", "fsl,imx8m-ddr-pmu";
+ 			reg = <0x3d800000 0x400000>;
+@@ -1217,40 +1302,4 @@
+ 		fsl,imx8mp-hsio-mix = <&hsio_mix>;
+ 		status = "disabled";
+ 	};
+-
+-	usb_dwc3_0: usb@38100000 {
+-		compatible = "fsl,imx8mq-dwc3", "snps,dwc3";
+-		reg = <0x0 0x38100000 0x0 0x10000>;
+-		interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>;
+-		phys = <&usb3_phy0>, <&usb3_phy0>;
+-		phy-names = "usb2-phy", "usb3-phy";
+-		usb3-resume-missing-cas;
+-		snps,power-down-scale = <2>;
+-		status = "disabled";
+-	};
+-
+-	usb3_phy0: usb-phy@381f0040 {
+-		compatible = "fsl,imx8mq-usb-phy";
+-		reg = <0x0 0x381f0040 0x0 0x40>;
+-		#phy-cells = <0>;
+-		status = "disabled";
+-	};
+-
+-	usb_dwc3_1: usb@38200000 {
+-		compatible = "fsl,imx8mq-dwc3", "snps,dwc3";
+-		reg = <0x0 0x38200000 0x0 0x10000>;
+-		interrupts = <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>;
+-		phys = <&usb3_phy1>, <&usb3_phy1>;
+-		phy-names = "usb2-phy", "usb3-phy";
+-		usb3-resume-missing-cas;
+-		snps,power-down-scale = <2>;
+-		status = "disabled";
+-	};
+-
+-	usb3_phy1: usb-phy@382f0040 {
+-		compatible = "fsl,imx8mq-usb-phy";
+-		reg = <0x0 0x382f0040 0x0 0x40>;
+-		#phy-cells = <0>;
+-		status = "disabled";
+-	};
+ };
+-- 
+2.33.0
+

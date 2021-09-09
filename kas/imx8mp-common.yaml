@@ -1,0 +1,171 @@
+#  Sparktech/UWINGS for srg-im8p
+#
+# Authors:
+#   KunYi <kunyi.chen@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+#
+header:
+  version: 10
+  includes:
+    - imx8mp-gatesgarth.yaml
+
+distro: poky
+target: core-image-minimal
+build_system: openembedded
+
+bblayers_conf_header:
+  standard: |
+    # POKY_BBLAYERS_CONF_VERSION is increased each time build/conf/bblayers.conf
+    # changes incompatibly
+    POKY_BBLAYERS_CONF_VERSION = "2"
+    BBPATH = "${TOPDIR}"
+    BBFILES ?= ""
+
+local_conf_header:
+  standard: |
+    CONF_VERSION = "1"
+  machine: |
+    MACHINE = "srg-im8p"
+  distro: |
+    DISTRO = "poky"
+  sdk_machine: |
+    SDKMACHINE = "x86_64"
+  uboot_extlinux_conf: |
+    UBOOT_EXTLINUX = "1"
+    UBOOT_EXTLINUX_FDT = "/boot/srg-im8p.dtb"
+    UBOOT_EXTLINUX_FDTDIR = "../"
+    UBOOT_EXTLINUX_ROOT = "initrd=/boot/initrd.img /dev/mmcblk2p${bootpart}"
+
+  initramfs: |
+    # Configuration for the rootfs overlay.
+    INITRAMFS_IMAGE ?= "mx8mp-initramfs"
+    INITRAMFS_IMAGE_NAME ?= "mx8mp-initramfs-${MACHINE}"
+    # INITRAMFS_IMAGE_BUNDLE = "1"
+
+    #INITRAMFS_MAXSIZE = "315400"
+    IMAGE_FSTYPES_pn-${INITRAMFS_IMAGE} = "${INITRAMFS_FSTYPES}"
+
+  misc: |
+    #
+    # Package Management configuration
+    #
+    # This variable lists which packaging formats to enable. Multiple package backends
+    # can be enabled at once and the first item listed in the variable will be used
+    # to generate the root filesystems.
+    # Options are:
+    #  - 'package_deb' for debian style deb files
+    #  - 'package_ipk' for ipk files are used by opkg (a debian style embedded package manager)
+    #  - 'package_rpm' for rpm style packages
+    # E.g.: PACKAGE_CLASSES ?= "package_rpm package_deb package_ipk"
+    # We default to rpm:
+    PACKAGE_CLASSES ?= "package_deb"
+
+    #
+    # Additional image features
+    #
+    # The following is a list of additional classes to use when building images which
+    # enable extra features. Some available options which can be included in this variable
+    # are:
+    #   - 'buildstats' collect build statistics
+    #   - 'image-mklibs' to reduce shared library files size for an image
+    #   - 'image-prelink' in order to prelink the filesystem image
+    # NOTE: if listing mklibs & prelink both, then make sure mklibs is before prelink
+    # NOTE: mklibs also needs to be explicitly enabled for a given image, see local.conf.extended
+    USER_CLASSES ?= "buildstats image-mklibs image-prelink"
+
+    #
+    # Extra image configuration defaults
+    #
+    # The EXTRA_IMAGE_FEATURES variable allows extra packages to be added to the generated
+    # images. Some of these options are added to certain image types automatically. The
+    # variable can contain the following options:
+    #  "dbg-pkgs"       - add -dbg packages for all installed packages
+    #                     (adds symbol information for debugging/profiling)
+    #  "src-pkgs"       - add -src packages for all installed packages
+    #                     (adds source code for debugging)
+    #  "dev-pkgs"       - add -dev packages for all installed packages
+    #                     (useful if you want to develop against libs in the image)
+    #  "ptest-pkgs"     - add -ptest packages for all ptest-enabled packages
+    #                     (useful if you want to run the package test suites)
+    #  "tools-sdk"      - add development tools (gcc, make, pkgconfig etc.)
+    #  "tools-debug"    - add debugging tools (gdb, strace)
+    #  "eclipse-debug"  - add Eclipse remote debugging support
+    #  "tools-profile"  - add profiling tools (oprofile, lttng, valgrind)
+    #  "tools-testapps" - add useful testing tools (ts_print, aplay, arecord etc.)
+    #  "debug-tweaks"   - make an image suitable for development
+    #                     e.g. ssh root access has a blank password
+    # There are other application targets that can be used here too, see
+    # meta/classes/image.bbclass and meta/classes/core-image.bbclass for more details.
+    # We default to enabling the debugging tweaks.
+    EXTRA_IMAGE_FEATURES ?= "debug-tweaks"
+
+    #
+    # Disk Space Monitoring during the build
+    #
+    # Monitor the disk space during the build. If there is less that 1GB of space or less
+    # than 100K inodes in any key build location (TMPDIR, DL_DIR, SSTATE_DIR), gracefully
+    # shutdown the build. If there is less that 100MB or 1K inodes, perform a hard abort
+    # of the build. The reason for this is that running completely out of space can corrupt
+    # files and damages the build in ways which may not be easily recoverable.
+    # It's necesary to monitor /tmp, if there is no space left the build will fail
+    # with very exotic errors.
+    BB_DISKMON_DIRS ??= "\
+    STOPTASKS,${TMPDIR},1G,100K \
+    STOPTASKS,${DL_DIR},1G,100K \
+    STOPTASKS,${SSTATE_DIR},1G,100K \
+    STOPTASKS,/tmp,100M,100K \
+    ABORT,${TMPDIR},100M,1K \
+    ABORT,${DL_DIR},100M,1K \
+    ABORT,${SSTATE_DIR},100M,1K \
+    ABORT,/tmp,10M,1K"
+
+    # By default disable interactive patch resolution (tasks will just fail instead):
+    PATCHRESOLVE = "noop"
+
+    EXTRA_IMAGE_FEATURES += "package-management"
+
+    IMAGE_FSTYPES += "wic.gz wic.bmap ext4.zst"
+
+    # for accept freescale/nxp license
+    ACCEPT_FSL_EULA = "1"
+
+    # Set PREFERRED_PROVIDER_u-boot-fw-utils to prevent warning about
+    # having two providers of u-boot-fw-utils
+    PREFERRED_PROVIDER_u-boot-fw-utils = "libubootenv-bin"
+
+    #
+    # Use busybox/mdev for system initialization
+    #
+    # VIRTUAL-RUNTIME_dev_manager = "busybox-mdev"
+    # VIRTUAL-RUNTIME_login_manager = "busybox"
+    # VIRTUAL-RUNTIME_init_manager = "busybox"
+    # VIRTUAL-RUNTIME_initscripts = "initscripts"
+    # VIRTUAL-RUNTIME_keymaps = "keymaps"
+    # DISTRO_FEATURES_BACKFILL_CONSIDERED += "sysvinit"
+    #
+    #
+    # Use systemd for system initialization
+    #
+    # DISTRO_FEATURES_append = " systemd sysvinit"
+    # DISTRO_FEATURES_BACKFILL_CONSIDERED += "sysvinit"
+    # VIRTUAL-RUNTIME_init_manager = "systemd"
+    # VIRTUAL-RUNTIME_initscripts = "systemd-compat-units"
+    #
+    DISTRO_FEATURES_append = " systemd"
+    DISTRO_FEATURES_BACKFILL_CONSIDERED += "sysvinit"
+    VIRTUAL-RUNTIME_init_manager = "systemd"
+    # VIRTUAL-RUNTIME_initscripts = "systemd-compat-units"
+
+    MODEL_NAME = "srg-im8p"
+    HW_REV = "1.0"
+    RFS_VERSION ??= "1.0.0"
+
+    PREFERRED_PROVIDER_virtual/kernel = "linux-imx"
+
+    # for secure boot enable,
+    # 'yes' for enabled either for disable
+    # default disabled
+    ENABLED_SECURE_BOOT ??= "no"
+    # i.MX Code Sign Tools directory
+    CST_DIR ??= "${TOPDIR}/../cst"

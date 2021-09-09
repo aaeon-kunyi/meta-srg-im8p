@@ -1,0 +1,33 @@
+# SWUpdate doesn't support everything necessary for the dual-copy or A/B update strategy.
+# Here we figure out the current OS partition and then set some environment variables
+# that we use to tell swupdate which partition to target.
+rootfs_dev=$(cat /proc/cmdline  | cut -d' ' -f 2 | cut -d= -f 2)
+current_part=$(echo $rootfs_dev | cut -dp -f 2)
+# support the below rootfs/boot device
+# /dev/mmcblk1 for sdcard/srg-im8p
+# /dev/mmcblk2 for emmc/srg-im8p
+#
+FW_PRINTENV="/usr/bin/fw_printenv"
+FW_SETENV="/usr/bin/fw_setenv"
+FW_ENVFILE="/etc/fw_env.config"
+
+if [[ "x$current_part" == "x1" ]]; then
+    selection="stable,rootB"
+    # current_part=1
+    # update_part=2
+else
+    selection="stable,rootA"
+    # current_part=2
+    # update_part=1
+fi
+SWUPDATE_ARGS="${SWUPDATE_ARGS} -e ${selection}"
+
+# enabled with hawkbit update server
+SWUPDATE_SURICATTA_ARGS="-e"
+check=$($FW_PRINTENV upgrade_available)
+if [[ "x$check" != "xupgrade_available=" ]]; then
+	$FW_SETENV upgrade_available
+	$FW_SETENV bootcount 0
+    # notify hawkbit upgrade successfully
+    SWUPDATE_SURICATTA_ARGS="-c 2"
+fi

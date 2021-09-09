@@ -1,0 +1,207 @@
+From 338cae0aeba6363d0b3dbe2fa6741ba37a4d2910 Mon Sep 17 00:00:00 2001
+From: Peng Fan <peng.fan@nxp.com>
+Date: Tue, 13 Jul 2021 14:33:45 +0800
+Subject: [PATCH 11/19] LF-3892-4 imx8mn: sync dts usb with nxp kernel
+
+Drop usbotg2 which not exist, drop power-domain property
+Disable snvs
+
+Reviewed-by: Ye Li <ye.li@nxp.com>
+Signed-off-by: Peng Fan <peng.fan@nxp.com>
+---
+ arch/arm/dts/imx8mn-ddr4-evk-u-boot.dtsi |  8 ------
+ arch/arm/dts/imx8mn-evk-u-boot.dtsi      |  8 ------
+ arch/arm/dts/imx8mn-evk.dtsi             | 36 ------------------------
+ arch/arm/dts/imx8mn.dtsi                 | 35 ++---------------------
+ 4 files changed, 2 insertions(+), 85 deletions(-)
+
+diff --git a/arch/arm/dts/imx8mn-ddr4-evk-u-boot.dtsi b/arch/arm/dts/imx8mn-ddr4-evk-u-boot.dtsi
+index c7d8dae2be..16d11a9026 100644
+--- a/arch/arm/dts/imx8mn-ddr4-evk-u-boot.dtsi
++++ b/arch/arm/dts/imx8mn-ddr4-evk-u-boot.dtsi
+@@ -12,7 +12,6 @@
+ 
+ 	aliases {
+ 		usbgadget0 = &usbg1;
+-		usbgadget1 = &usbg2;
+ 	};
+ 
+ 	usbg1: usbg1 {
+@@ -22,13 +21,6 @@
+ 		status = "okay";
+ 	};
+ 
+-	usbg2: usbg2 {
+-		compatible = "fsl,imx27-usb-gadget";
+-		dr_mode = "peripheral";
+-		chipidea,usb = <&usbotg2>;
+-		status = "okay";
+-	};
+-
+ 	firmware {
+ 		optee {
+ 			compatible = "linaro,optee-tz";
+diff --git a/arch/arm/dts/imx8mn-evk-u-boot.dtsi b/arch/arm/dts/imx8mn-evk-u-boot.dtsi
+index 20e2ffccce..d881e4fad3 100644
+--- a/arch/arm/dts/imx8mn-evk-u-boot.dtsi
++++ b/arch/arm/dts/imx8mn-evk-u-boot.dtsi
+@@ -12,7 +12,6 @@
+ 
+ 	aliases {
+ 		usbgadget0 = &usbg1;
+-		usbgadget1 = &usbg2;
+ 	};
+ 
+ 	usbg1: usbg1 {
+@@ -22,13 +21,6 @@
+ 		status = "okay";
+ 	};
+ 
+-	usbg2: usbg2 {
+-		compatible = "fsl,imx27-usb-gadget";
+-		dr_mode = "peripheral";
+-		chipidea,usb = <&usbotg2>;
+-		status = "okay";
+-	};
+-
+ 	firmware {
+ 		optee {
+ 			compatible = "linaro,optee-tz";
+diff --git a/arch/arm/dts/imx8mn-evk.dtsi b/arch/arm/dts/imx8mn-evk.dtsi
+index a458384824..a2b7d4bdfc 100644
+--- a/arch/arm/dts/imx8mn-evk.dtsi
++++ b/arch/arm/dts/imx8mn-evk.dtsi
+@@ -155,31 +155,6 @@
+ 			self-powered;
+ 		};
+ 	};
+-
+-	ptn5110_2: tcpc@52 {
+-		compatible = "nxp,ptn5110";
+-		reg = <0x52>;
+-		status = "okay";
+-
+-		port {
+-			typec2_dr_sw: endpoint {
+-				remote-endpoint = <&usb2_drd_sw>;
+-			};
+-		};
+-
+-		typec2_con: connector {
+-			compatible = "usb-c-connector";
+-			label = "USB-C";
+-			power-role = "dual";
+-			data-role = "dual";
+-			try-power-role = "sink";
+-			source-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)>;
+-			sink-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)
+-				     PDO_VAR(5000, 20000, 3000)>;
+-			op-sink-microwatt = <15000000>;
+-			self-powered;
+-		};
+-	};
+ };
+ 
+ &i2c3 {
+@@ -268,17 +243,6 @@
+ 	};
+ };
+ 
+-&usbotg2 {
+-	status = "okay";
+-	extcon = <&ptn5110_2>;
+-	
+-	port {
+-		usb2_drd_sw: endpoint {
+-			remote-endpoint = <&typec2_dr_sw>;
+-		};
+-	};
+-};
+-
+ &usdhc2 {
+ 	assigned-clocks = <&clk IMX8MN_CLK_USDHC2>;
+ 	assigned-clock-rates = <200000000>;
+diff --git a/arch/arm/dts/imx8mn.dtsi b/arch/arm/dts/imx8mn.dtsi
+index 1f3286e19c..a7a710c953 100644
+--- a/arch/arm/dts/imx8mn.dtsi
++++ b/arch/arm/dts/imx8mn.dtsi
+@@ -37,7 +37,6 @@
+ 		serial3 = &uart4;
+ 		spi0 = &flexspi;
+ 		usb0 = &usbotg1;
+-		usb1 = &usbotg2;
+ 		video0 = &lcdif;
+ 	};
+ 
+@@ -633,6 +632,7 @@
+ 			snvs: snvs@30370000 {
+ 				compatible = "fsl,sec-v4.0-mon","syscon", "simple-mfd";
+ 				reg = <0x30370000 0x10000>;
++				status = "disabled";
+ 
+ 				snvs_rtc: snvs-rtc-lp {
+ 					compatible = "fsl,sec-v4.0-mon-rtc-lp";
+@@ -642,6 +642,7 @@
+ 						     <GIC_SPI 20 IRQ_TYPE_LEVEL_HIGH>;
+ 					clocks = <&clk IMX8MN_CLK_SNVS_ROOT>;
+ 					clock-names = "snvs-rtc";
++					status = "disabled";
+ 				};
+ 
+ 				snvs_pwrkey: snvs-powerkey {
+@@ -1103,7 +1104,6 @@
+ 							 <&clk IMX8MN_SYS_PLL1_100M>;
+ 				fsl,usbphy = <&usbphynop1>;
+ 				fsl,usbmisc = <&usbmisc1 0>;
+-				power-domains = <&usb_otg1_pd>;
+ 				status = "disabled";
+ 			};
+ 
+@@ -1112,28 +1112,6 @@
+ 				#index-cells = <1>;
+ 				reg = <0x32e40200 0x200>;
+ 			};
+-
+-			usbotg2: usb@32e50000 {
+-				compatible = "fsl,imx8mn-usb", "fsl,imx7d-usb", "fsl,imx27-usb";
+-				reg = <0x32e50000 0x200>;
+-				interrupts = <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>;
+-				clocks = <&clk IMX8MN_CLK_USB1_CTRL_ROOT>;
+-				clock-names = "usb1_ctrl_root_clk";
+-				assigned-clocks = <&clk IMX8MN_CLK_USB_BUS>,
+-						  <&clk IMX8MN_CLK_USB_CORE_REF>;
+-				assigned-clock-parents = <&clk IMX8MN_SYS_PLL2_500M>,
+-							 <&clk IMX8MN_SYS_PLL1_100M>;
+-				fsl,usbphy = <&usbphynop2>;
+-				fsl,usbmisc = <&usbmisc2 0>;
+-				status = "disabled";
+-			};
+-
+-			usbmisc2: usbmisc@32e50200 {
+-				compatible = "fsl,imx8mn-usbmisc", "fsl,imx7d-usbmisc";
+-				#index-cells = <1>;
+-				reg = <0x32e50200 0x200>;
+-			};
+-
+ 		};
+ 
+ 		dma_apbh: dma-controller@33000000 {
+@@ -1199,15 +1177,6 @@
+ 		clock-names = "main_clk";
+ 	};
+ 
+-	usbphynop2: usbphynop2 {
+-		compatible = "usb-nop-xceiv";
+-		clocks = <&clk IMX8MN_CLK_USB_PHY_REF>;
+-		assigned-clocks = <&clk IMX8MN_CLK_USB_PHY_REF>;
+-		assigned-clock-parents = <&clk IMX8MN_SYS_PLL1_100M>;
+-		clock-names = "main_clk";
+-	};
+-
+-
+ 	dispmix-reset {
+ 		compatible = "simple-bus";
+ 		#address-cells = <2>;
+-- 
+2.33.0
+

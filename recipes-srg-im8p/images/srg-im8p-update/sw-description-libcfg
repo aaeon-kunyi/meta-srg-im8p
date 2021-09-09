@@ -1,0 +1,68 @@
+software =
+{
+    version = "@@SWU_SOFTWARE_VERSION@@";
+
+    @@MODEL_NAME@@ = {
+        hardware-compatibility: [ "1.0" ];
+
+        stable:
+        {
+            rootA:
+            {
+                images: (
+                {
+                    filename = "srg-im8p-image-@@MACHINE@@.ext4.zst";
+                    sha256 = "@srg-im8p-image-@@MACHINE@@.ext4.zst";
+                    type = "raw";
+                    compressed = "zstd";
+                    device = "/dev/mmcblk2p1";
+                    name = "rootfs";
+                    version = "@@RFS_VERSION@@";
+                    install-if-different = true;
+                }
+                );
+                bootenv: (
+                {
+                    name = "bootpart";
+                    value = "1";
+                },
+                {
+                    name = "upgrade_available";
+                    value = "1";
+                },
+                {
+                    name = "bootcount";
+                    value = "0"
+                });
+            };
+            rootB:
+            {
+                images: (
+                {
+                    filename = "srg-im8p-image-@@MACHINE@@.ext4.zst";
+                    sha256 = "@srg-im8p-image-@@MACHINE@@.ext4.zst";
+                    type = "raw";
+                    compressed = "zstd";
+                    device = "/dev/mmcblk2p2";
+                    name = "rootfs";
+                    version = "@@RFS_VERSION@@";
+                    install-if-different = true;
+                }
+                );
+                bootenv: (
+                {
+                    name = "bootpart";
+                    value = "2";
+                },
+                {
+                    name = "upgrade_available";
+                    value = "1";
+                },
+                {
+                    name = "bootcount";
+                    value = "0"
+                });
+            };
+        };
+    };
+}

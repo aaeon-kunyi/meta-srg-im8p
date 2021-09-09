@@ -1,0 +1,154 @@
+From c9a4a0413d00d571c97e1b7e489c755cf2701840 Mon Sep 17 00:00:00 2001
+From: KunYi <kunyi.chen@gmail.com>
+Date: Fri, 26 Mar 2021 14:47:04 +0800
+Subject: [PATCH] remove imx8mn/imx8mp evk conf
+
+only to use meta-imx/conf/machine/imx8m[np]evk.conf
+---
+ conf/machine/imx8mnevk.conf | 60 ---------------------------------
+ conf/machine/imx8mpevk.conf | 66 -------------------------------------
+ 2 files changed, 126 deletions(-)
+ delete mode 100644 conf/machine/imx8mnevk.conf
+ delete mode 100644 conf/machine/imx8mpevk.conf
+
+diff --git a/conf/machine/imx8mnevk.conf b/conf/machine/imx8mnevk.conf
+deleted file mode 100644
+index 80d77ac8..00000000
+--- a/conf/machine/imx8mnevk.conf
++++ /dev/null
+@@ -1,60 +0,0 @@
+-#@TYPE: Machine
+-#@NAME: NXP i.MX8M Nano DDR4 Evaluation Kit
+-#@SOC: i.MX8MM
+-#@DESCRIPTION: Machine configuration for NXP i.MX8M Nano DDR4 EVK
+-#@MAINTAINER: Andrey Zhizhikin <andrey.z@gmail.com>
+-
+-MACHINEOVERRIDES =. "mx8:mx8m:mx8mn:"
+-
+-require conf/machine/include/imx-base.inc
+-require conf/machine/include/tune-cortexa53.inc
+-
+-IMX_DEFAULT_BSP = "nxp"
+-
+-MACHINE_FEATURES += "wifi bluetooth optee bcm43455"
+-
+-KERNEL_DEVICETREE = " \
+-	freescale/imx8mn-ddr4-evk-ak5558.dtb \
+-	freescale/imx8mn-ddr4-evk.dtb \
+-	freescale/imx8mn-ddr4-evk-inmate.dtb \
+-	freescale/imx8mn-ddr4-evk-rm67191.dtb \
+-	freescale/imx8mn-ddr4-evk-root.dtb \
+-	freescale/imx8mn-ddr4-evk-rpmsg.dtb \
+-	freescale/imx8mn-evk.dtb \
+-	freescale/imx8mn-evk-rm67191.dtb \
+-"
+-
+-UBOOT_CONFIG ??= "sd"
+-UBOOT_CONFIG[sd] = "imx8mn_ddr4_evk_defconfig,sdcard"
+-UBOOT_CONFIG[mfgtool] = "imx8mn_ddr4_evk_defconfig"
+-SPL_BINARY = "spl/u-boot-spl.bin"
+-
+-# Set DDR FIRMWARE
+-DDR_FIRMWARE_NAME = "ddr4_imem_1d_201810.bin \
+-                     ddr4_dmem_1d_201810.bin \
+-                     ddr4_imem_2d_201810.bin \
+-                     ddr4_dmem_2d_201810.bin"
+-
+-# Set u-boot DTB
+-UBOOT_DTB_NAME = "imx8mn-ddr4-evk.dtb"
+-
+-# Set imx-mkimage boot target
+-IMXBOOT_TARGETS = "${@bb.utils.contains('UBOOT_CONFIG', 'fspi', 'flash_ddr4_evk_flexspi', 'flash_ddr4_evk', d)}"
+-
+-# Set Serial console
+-SERIAL_CONSOLES = "115200;ttymxc1"
+-
+-BOOT_SPACE = "65536"
+-LOADADDR = ""
+-UBOOT_SUFFIX = "bin"
+-UBOOT_MAKE_TARGET = ""
+-
+-# Image boot offset as defined in section 6.1.6.1 "Primary image offset and IVT offset" of
+-# i.MX 8M Nano Applications Processor Reference Manual, Rev. 0, 12/2019
+-# Doc ID: IMX8MNRM
+-IMX_BOOT_SEEK = "32"
+-
+-OPTEE_BIN_EXT = "8mn"
+-
+-# Add additional firmware
+-MACHINE_FIRMWARE_append = " linux-firmware-ath10k"
+diff --git a/conf/machine/imx8mpevk.conf b/conf/machine/imx8mpevk.conf
+deleted file mode 100644
+index d1376649..00000000
+--- a/conf/machine/imx8mpevk.conf
++++ /dev/null
+@@ -1,66 +0,0 @@
+-#@TYPE: Machine
+-#@NAME: NXP i.MX8MP Evaluation Kit and i.MX8MP Evaluation Kit
+-#@SOC: i.MX8MP
+-#@DESCRIPTION: Machine configuration for NXP i.MX8MP EVK
+-#@MAINTAINER: Alexandru Palalau <ioan-alexandru.palalau@nxp.com>
+-
+-MACHINEOVERRIDES =. "mx8:mx8m:mx8mp:"
+-
+-require conf/machine/include/imx-base.inc
+-require conf/machine/include/tune-cortexa53.inc
+-
+-IMX_DEFAULT_BSP = "nxp"
+-
+-MACHINE_FEATURES += " pci wifi bluetooth optee mrvl8997"
+-
+-KERNEL_DEVICETREE = " \
+-	freescale/imx8mp-ab2.dtb \
+-	freescale/imx8mp-evk-basler.dtb \
+-	freescale/imx8mp-evk.dtb \
+-	freescale/imx8mp-evk-dsp.dtb \
+-	freescale/imx8mp-evk-flexcan2.dtb \
+-	freescale/imx8mp-evk-inmate.dtb \
+-	freescale/imx8mp-evk-jdi-wuxga-lvds-panel.dtb \
+-	freescale/imx8mp-evk-it6263-lvds-dual-channel.dtb \
+-	freescale/imx8mp-evk-ov2775.dtb \
+-	freescale/imx8mp-evk-rm67191.dtb \
+-	freescale/imx8mp-evk-root.dtb \
+-	freescale/imx8mp-evk-rpmsg.dtb \
+-	freescale/imx8mp-evk-sof-wm8960.dtb \
+-"
+-
+-UBOOT_CONFIG ??= "sd"
+-UBOOT_CONFIG[sd] = "imx8mp_evk_defconfig,sdcard"
+-UBOOT_CONFIG[fspi] = "imx8mp_evk_defconfig"
+-UBOOT_CONFIG[ecc] = "imx8mp_evk_inline_ecc_defconfig"
+-UBOOT_CONFIG[mfgtool] = "imx8mp_evk_defconfig"
+-SPL_BINARY = "spl/u-boot-spl.bin"
+-
+-# Set DDR FIRMWARE
+-DDR_FIRMWARE_NAME = " \
+-	lpddr4_pmu_train_1d_dmem_201904.bin \
+-	lpddr4_pmu_train_1d_imem_201904.bin \
+-	lpddr4_pmu_train_2d_dmem_201904.bin \
+-	lpddr4_pmu_train_2d_imem_201904.bin \
+-"
+-
+-# Set u-boot DTB
+-UBOOT_DTB_NAME = "imx8mp-evk.dtb"
+-
+-# Set imx-mkimage boot target
+-IMXBOOT_TARGETS = "${@bb.utils.contains('UBOOT_CONFIG', 'fspi', 'flash_evk_flexspi', 'flash_evk', d)}"
+-
+-# Set Serial console
+-SERIAL_CONSOLES = "115200;ttymxc1"
+-
+-IMAGE_BOOTLOADER = "imx-boot"
+-
+-LOADADDR = ""
+-UBOOT_SUFFIX = "bin"
+-UBOOT_MAKE_TARGET = ""
+-IMX_BOOT_SEEK = "32"
+-
+-OPTEE_BIN_EXT = "8mp"
+-
+-# Add additional firmware
+-MACHINE_FIRMWARE_append = " linux-firmware-ath10k"
+-- 
+2.31.0
+

@@ -1,0 +1,42 @@
+From 19cc2987411ba87a69c2e3ebcd17587b4dc05993 Mon Sep 17 00:00:00 2001
+From: Ye Li <ye.li@nxp.com>
+Date: Wed, 14 Jul 2021 00:35:14 -0700
+Subject: [PATCH 06/19] LFU-193-4 imx8mp_evk: Remove USB2 PWR GPIO control
+
+Since we have configured the USB2 VBUS GPIO1_IO14 to USB PWR, so
+don't need to control it as a GPIO in board codes
+
+Signed-off-by: Ye Li <ye.li@nxp.com>
+Reviewed-by: Peng Fan <peng.fan@nxp.com>
+---
+ board/freescale/imx8mp_evk/imx8mp_evk.c | 7 -------
+ 1 file changed, 7 deletions(-)
+
+diff --git a/board/freescale/imx8mp_evk/imx8mp_evk.c b/board/freescale/imx8mp_evk/imx8mp_evk.c
+index eda2fe4a85..7c08face5f 100644
+--- a/board/freescale/imx8mp_evk/imx8mp_evk.c
++++ b/board/freescale/imx8mp_evk/imx8mp_evk.c
+@@ -353,10 +353,6 @@ int board_usb_init(int index, enum usb_init_type init)
+ 		ret = tcpc_setup_dfp_mode(&port1);
+ #endif
+ 		return ret;
+-	} else if (index == 1 && init == USB_INIT_HOST) {
+-		/* Enable GPIO1_IO14 for 5V VBUS */
+-		gpio_request(USB2_PWR_EN, "usb2_pwr");
+-		gpio_direction_output(USB2_PWR_EN, 1);
+ 	}
+ 
+ 	return 0;
+@@ -371,9 +367,6 @@ int board_usb_cleanup(int index, enum usb_init_type init)
+ #ifdef CONFIG_USB_TCPC
+ 		ret = tcpc_disable_src_vbus(&port1);
+ #endif
+-	} else if (index == 1 && init == USB_INIT_HOST) {
+-		/* Disable GPIO1_IO14 for 5V VBUS */
+-		gpio_direction_output(USB2_PWR_EN, 0);
+ 	}
+ 
+ 	imx8m_usb_power(index, false);
+-- 
+2.33.0
+

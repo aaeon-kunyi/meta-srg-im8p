@@ -1,0 +1,15 @@
+
+#  Sparktech/UWINGS for SRG-IM8P
+#
+# Authors:
+#   KunYi <kunyi.chen@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+#
+header:
+  version: 10
+
+local_conf_header:
+  hab: |
+    CST_DIR = "${TOPDIR}/../cst"
+    ENABLED_SECURE_BOOT = "yes"

@@ -1,0 +1,74 @@
+From 532c70d232030309a76373459f6527d4e1dac633 Mon Sep 17 00:00:00 2001
+From: KunYi <kunyi.chen@gmail.com>
+Date: Tue, 27 Apr 2021 15:40:12 +0800
+Subject: [PATCH 2/2] add support zstd on ext4 and squash
+
+---
+ meta/classes/image_types.bbclass | 16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
+
+diff --git a/meta/classes/image_types.bbclass b/meta/classes/image_types.bbclass
+index 30951ae366..a631a00f6d 100644
+--- a/meta/classes/image_types.bbclass
++++ b/meta/classes/image_types.bbclass
+@@ -107,6 +107,7 @@ IMAGE_CMD_squashfs = "mksquashfs ${IMAGE_ROOTFS} ${IMGDEPLOYDIR}/${IMAGE_NAME}${
+ IMAGE_CMD_squashfs-xz = "mksquashfs ${IMAGE_ROOTFS} ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.squashfs-xz ${EXTRA_IMAGECMD} -noappend -comp xz"
+ IMAGE_CMD_squashfs-lzo = "mksquashfs ${IMAGE_ROOTFS} ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.squashfs-lzo ${EXTRA_IMAGECMD} -noappend -comp lzo"
+ IMAGE_CMD_squashfs-lz4 = "mksquashfs ${IMAGE_ROOTFS} ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.squashfs-lz4 ${EXTRA_IMAGECMD} -noappend -comp lz4"
++IMAGE_CMD_squashfs-zst = "mksquashfs ${IMAGE_ROOTFS} ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.squashfs-zst ${EXTRA_IMAGECMD} -noappend -comp zstd"
+ 
+ IMAGE_CMD_TAR ?= "tar"
+ # ignore return code 1 "file changed as we read it" as other tasks(e.g. do_image_wic) may be hardlinking rootfs
+@@ -137,12 +138,12 @@ UBI_VOLNAME ?= "${MACHINE}-rootfs"
+ multiubi_mkfs() {
+ 	local mkubifs_args="$1"
+ 	local ubinize_args="$2"
+-    
++
+         # Added prompt error message for ubi and ubifs image creation.
+         if [ -z "$mkubifs_args" ] || [ -z "$ubinize_args" ]; then
+             bbfatal "MKUBIFS_ARGS and UBINIZE_ARGS have to be set, see http://www.linux-mtd.infradead.org/faq/ubifs.html for details"
+         fi
+-    
++
+ 	if [ -z "$3" ]; then
+ 		local vname=""
+ 	else
+@@ -239,6 +240,7 @@ do_image_squashfs[depends] += "squashfs-tools-native:do_populate_sysroot"
+ do_image_squashfs_xz[depends] += "squashfs-tools-native:do_populate_sysroot"
+ do_image_squashfs_lzo[depends] += "squashfs-tools-native:do_populate_sysroot"
+ do_image_squashfs_lz4[depends] += "squashfs-tools-native:do_populate_sysroot"
++do_image_squashfs_zst[depends] += "squashfs-tools-native:do_populate_sysroot"
+ do_image_ubi[depends] += "mtd-utils-native:do_populate_sysroot"
+ do_image_ubifs[depends] += "mtd-utils-native:do_populate_sysroot"
+ do_image_multiubi[depends] += "mtd-utils-native:do_populate_sysroot"
+@@ -248,13 +250,13 @@ do_image_f2fs[depends] += "f2fs-tools-native:do_populate_sysroot"
+ IMAGE_TYPES = " \
+     jffs2 jffs2.sum \
+     cramfs \
+-    ext2 ext2.gz ext2.bz2 ext2.lzma \
+-    ext3 ext3.gz \
+-    ext4 ext4.gz \
++    ext2 ext2.gz ext2.bz2 ext2.lzma ext2.zst \
++    ext3 ext3.gz ext3.zst \
++    ext4 ext4.gz ext4.zst \
+     btrfs \
+     iso \
+     hddimg \
+-    squashfs squashfs-xz squashfs-lzo squashfs-lz4 \
++    squashfs squashfs-xz squashfs-lzo squashfs-lz4 squashfs-zst \
+     ubi ubifs multiubi \
+     tar tar.gz tar.bz2 tar.xz tar.lz4 tar.zst \
+     cpio cpio.gz cpio.xz cpio.lzma cpio.lz4 \
+@@ -310,7 +312,7 @@ CONVERSION_DEPENDS_base64 = "coreutils-native"
+ RUNNABLE_IMAGE_TYPES ?= "ext2 ext3 ext4"
+ RUNNABLE_MACHINE_PATTERNS ?= "qemu"
+ 
+-DEPLOYABLE_IMAGE_TYPES ?= "hddimg iso" 
++DEPLOYABLE_IMAGE_TYPES ?= "hddimg iso"
+ 
+ # The IMAGE_TYPES_MASKED variable will be used to mask out from the IMAGE_FSTYPES,
+ # images that will not be built at do_rootfs time: vmdk, vdi, qcow2, hddimg, iso, etc.
+-- 
+2.31.1
+
