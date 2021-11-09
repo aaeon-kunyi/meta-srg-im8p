@@ -5,6 +5,9 @@ The BSP for **AAEON SRG-IM8P IoT Gateway**.
 to integration [SWUpdate](https://sbabic.github.io/swupdate/) support,
 base on **NXP offical BSP 5.10.9_1.0.0 (gatesgarth)** and to extend new feature.
 
+and the BSP only verify on board rev A0.1
+if you need support please contact AAEON Sales/Product manager
+
 ### extend new features include the below
 * **Over-The-Air update**, support with **Eclipse Hawkbit**
 * **Offline update**, auto detection/update when update package on USB disk
